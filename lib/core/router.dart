@@ -1,7 +1,10 @@
 import 'package:fashion_flow/features/auth/presentation/login_screen.dart';
 import 'package:fashion_flow/features/auth/presentation/signup_screen.dart';
 import 'package:fashion_flow/features/cart/presentation/cart_screen.dart';
+import 'package:fashion_flow/features/orders/presentation/order_detail_screen.dart';
+import 'package:fashion_flow/features/orders/presentation/orders_screen.dart';
 import 'package:fashion_flow/features/products/presentation/home_screen.dart';
+import 'package:fashion_flow/features/profile/presentation/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -15,6 +18,7 @@ abstract class AppRoutes {
   static const productDetail = '/product/:id';
   static const profile = '/profile';
   static const orders = '/orders';
+  static const orderDetail = '/orders/:id';
 }
 
 /// Creates the GoRouter instance for the app.
@@ -65,6 +69,24 @@ GoRouter createRouter() {
         path: AppRoutes.cart,
         name: 'cart',
         builder: (context, state) => const CartScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.profile,
+        name: 'profile',
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.orders,
+        name: 'orders',
+        builder: (context, state) => const OrdersScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.orderDetail,
+        name: 'orderDetail',
+        builder: (context, state) {
+          final orderId = state.pathParameters['id']!;
+          return OrderDetailScreen(orderId: orderId);
+        },
       ),
       // TODO: Add product detail route in Stage 3
       // GoRoute(

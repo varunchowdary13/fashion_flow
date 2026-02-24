@@ -1,5 +1,8 @@
+import 'package:fashion_flow/core/providers.dart';
+import 'package:fashion_flow/core/router.dart';
 import 'package:fashion_flow/features/cart/presentation/cart_controller.dart';
 import 'package:fashion_flow/features/cart/presentation/cart_item_tile.dart';
+import 'package:fashion_flow/features/orders/domain/order.dart' as order_domain;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -135,18 +138,91 @@ class CartScreen extends ConsumerWidget {
   }
 
   void _handleCheckout(BuildContext context, WidgetRef ref, double total) {
+    final cartItems = ref.read(cartProvider);
+    final subtotal = ref.read(cartTotalProvider);
+    final tax = subtotal * _taxRate;
+    final supabase = ref.read(supabaseClientProvider);
+    final userId = supabase.auth.currentUser?.id;
+
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to checkout')),
+      );
+      return;
+    }
+
+    // Convert cart items to order items
+    final orderItems = cartItems
+        .map(
+          (item) => order_domain.OrderItem(
+            productId: item.product.id,
+            productName: item.product.name,
+            productImageUrl: item.product.imageUrl,
+            priceAtPurchase: item.product.price,
+            quantity: item.quantity,
+          ),
+        )
+        .toList();
+
+    // Show loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => _CheckoutSuccessDialog(
-        total: total,
-        onClose: () {
-          Navigator.pop(context);
-          ref.read(cartProvider.notifier).clearCart();
-          context.pop();
-        },
-      ),
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+
+    // Create order in Supabase
+    ref
+        .read(orderRepositoryProvider)
+        .createOrder(
+          userId: userId,
+          items: orderItems,
+          totalPrice: subtotal + tax,
+          shippingAddress: '123 Main St, City, Country', // Mock address
+          paymentMethod: 'Credit Card', // Mock payment
+        )
+        .then((result) {
+          Navigator.pop(context); // Remove loading dialog
+
+          result.fold(
+            (failure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to place order: ${failure.message}'),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
+              );
+            },
+            (order) {
+              // Show success dialog
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => _CheckoutSuccessDialog(
+                  total: total,
+                  orderNumber: order.orderNumber,
+                  orderId: order.id,
+                  onClose: () {
+                    Navigator.pop(context);
+                    ref.read(cartProvider.notifier).clearCart();
+                    // Invalidate orders to refetch
+                    ref.invalidate(ordersProvider);
+                    context.pop();
+                  },
+                  onViewOrder: () {
+                    Navigator.pop(context);
+                    ref.read(cartProvider.notifier).clearCart();
+                    // Invalidate orders to refetch
+                    ref.invalidate(ordersProvider);
+                    context.go(
+                      AppRoutes.orderDetail.replaceFirst(':id', order.id),
+                    );
+                  },
+                ),
+              );
+            },
+          );
+        });
   }
 }
 
@@ -327,9 +403,18 @@ class _SummaryRow extends StatelessWidget {
 
 class _CheckoutSuccessDialog extends StatelessWidget {
   final double total;
+  final String orderNumber;
+  final String orderId;
   final VoidCallback onClose;
+  final VoidCallback onViewOrder;
 
-  const _CheckoutSuccessDialog({required this.total, required this.onClose});
+  const _CheckoutSuccessDialog({
+    required this.total,
+    required this.orderNumber,
+    required this.orderId,
+    required this.onClose,
+    required this.onViewOrder,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -372,6 +457,23 @@ class _CheckoutSuccessDialog extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Order #$orderNumber',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(
                 color: colorScheme.primaryContainer.withValues(alpha: 0.3),
@@ -389,6 +491,14 @@ class _CheckoutSuccessDialog extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: FilledButton(
+                onPressed: onViewOrder,
+                child: const Text('View Order'),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
                 onPressed: onClose,
                 child: const Text('Continue Shopping'),
               ),

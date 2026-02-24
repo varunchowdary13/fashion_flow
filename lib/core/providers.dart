@@ -1,5 +1,8 @@
 import 'package:fashion_flow/features/auth/data/auth_repository_impl.dart';
 import 'package:fashion_flow/features/auth/domain/auth_repository.dart';
+import 'package:fashion_flow/features/orders/data/order_repository_impl.dart';
+import 'package:fashion_flow/features/orders/domain/order.dart';
+import 'package:fashion_flow/features/orders/domain/order_repository.dart';
 import 'package:fashion_flow/features/products/data/product_repository_impl.dart';
 import 'package:fashion_flow/features/products/domain/product.dart';
 import 'package:fashion_flow/features/products/domain/product_repository.dart';
@@ -43,5 +46,32 @@ final productsProvider = FutureProvider<List<Product>>((ref) async {
   return result.fold(
     (failure) => throw Exception(failure.message),
     (products) => products,
+  );
+});
+
+// ─────────────────────────────────────────────────
+// Order Providers
+// ─────────────────────────────────────────────────
+
+/// Provides the OrderRepository implementation.
+final orderRepositoryProvider = Provider<OrderRepository>((ref) {
+  final supabase = ref.watch(supabaseClientProvider);
+  return OrderRepositoryImpl(supabase);
+});
+
+/// Fetches orders for the current user.
+final ordersProvider = FutureProvider<List<Order>>((ref) async {
+  final supabase = ref.watch(supabaseClientProvider);
+  final userId = supabase.auth.currentUser?.id;
+
+  if (userId == null) {
+    return [];
+  }
+
+  final repo = ref.watch(orderRepositoryProvider);
+  final result = await repo.getOrders(userId);
+  return result.fold(
+    (failure) => throw Exception(failure.message),
+    (orders) => orders,
   );
 });
