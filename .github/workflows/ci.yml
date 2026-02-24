@@ -55,6 +55,7 @@ jobs:
           retention-days: 1
 
   # Deploy to GitHub Pages (only on push to master/main)
+  # NOTE: You must enable GitHub Pages in repo Settings > Pages > Source: GitHub Actions
   deploy:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     needs: build
@@ -71,6 +72,7 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
+        continue-on-error: true
 
       - name: Upload to GitHub Pages
         uses: actions/upload-pages-artifact@v3
@@ -80,3 +82,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        continue-on-error: true
