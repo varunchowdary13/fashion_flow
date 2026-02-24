@@ -1,29 +1,70 @@
-// Basic Flutter widget test for Fashion Flow app.
+// Basic Flutter widget tests for Fashion Flow app.
+// Note: Full app integration tests require Supabase initialization.
+// These tests focus on individual widgets that don't require backend.
 
-import 'package:flutter_test/flutter_test.dart';
+import 'package:fashion_flow/core/theme/app_theme.dart';
+import 'package:fashion_flow/features/auth/presentation/login_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fashion_flow/main.dart';
-import 'package:fashion_flow/core/theme/theme_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('App should build without errors', (WidgetTester tester) async {
-    // Initialize SharedPreferences for testing
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
+  group('Theme Tests', () {
+    testWidgets('Light theme should have correct primary color', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const Scaffold(body: Text('Test')),
+        ),
+      );
 
-    // Build our app and trigger a frame with mocked preferences.
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        child: const FashionFlowApp(),
-      ),
-    );
+      final theme = Theme.of(tester.element(find.text('Test')));
+      expect(theme.colorScheme.primary, AppTheme.primaryColor);
+    });
 
-    // Verify the app builds and shows login screen
-    await tester.pumpAndSettle();
+    testWidgets('Dark theme should have correct primary color', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const Scaffold(body: Text('Test')),
+        ),
+      );
 
-    // Basic smoke test - app should render without throwing
-    expect(tester.takeException(), isNull);
+      final theme = Theme.of(tester.element(find.text('Test')));
+      expect(theme.colorScheme.primary, AppTheme.primaryColor);
+    });
+  });
+
+  group('Login Screen Widget Tests', () {
+    testWidgets('Login screen should show email and password fields', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const ProviderScope(child: MaterialApp(home: LoginScreen())),
+      );
+
+      expect(find.byType(TextFormField), findsNWidgets(2));
+      expect(find.text('Email'), findsOneWidget);
+      expect(find.text('Password'), findsOneWidget);
+    });
+
+    testWidgets('Login screen should show sign in button', (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(child: MaterialApp(home: LoginScreen())),
+      );
+
+      expect(find.text('Login'), findsOneWidget);
+    });
+
+    testWidgets('Login screen should show sign up link', (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(child: MaterialApp(home: LoginScreen())),
+      );
+
+      expect(find.textContaining("Don't have an account"), findsOneWidget);
+      expect(find.text('Sign Up'), findsOneWidget);
+    });
   });
 }
