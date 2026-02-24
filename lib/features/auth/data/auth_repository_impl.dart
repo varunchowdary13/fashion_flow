@@ -1,7 +1,9 @@
+import 'package:fashion_flow/core/error/failures.dart';
 import 'package:fashion_flow/features/auth/domain/auth_repository.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// Supabase implementation of [AuthRepository].
 class AuthRepositoryImpl implements AuthRepository {
   final SupabaseClient _supabaseClient;
 
@@ -11,7 +13,14 @@ class AuthRepositoryImpl implements AuthRepository {
   User? get currentUser => _supabaseClient.auth.currentUser;
 
   @override
-  Future<Either<String, AuthResponse>> loginWithEmailPassword({
+  bool get isAuthenticated => currentUser != null;
+
+  @override
+  Stream<AuthState> get authStateChanges =>
+      _supabaseClient.auth.onAuthStateChange;
+
+  @override
+  Future<Either<Failure, AuthResponse>> loginWithEmailPassword({
     required String email,
     required String password,
   }) async {
@@ -22,14 +31,14 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return right(response);
     } on AuthException catch (e) {
-      return left(e.message);
+      return left(AuthFailure(message: e.message));
     } catch (e) {
-      return left('An unexpected error occurred: $e');
+      return left(ServerFailure(message: 'An unexpected error occurred: $e'));
     }
   }
 
   @override
-  Future<Either<String, AuthResponse>> signUp({
+  Future<Either<Failure, AuthResponse>> signUp({
     required String email,
     required String password,
     required String fullName,
@@ -42,14 +51,33 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return right(response);
     } on AuthException catch (e) {
-      return left(e.message);
+      return left(AuthFailure(message: e.message));
     } catch (e) {
-      return left('An unexpected error occurred: $e');
+      return left(ServerFailure(message: 'An unexpected error occurred: $e'));
     }
   }
 
   @override
-  Future<void> signOut() async {
-    await _supabaseClient.auth.signOut();
+  Future<Either<Failure, Unit>> signOut() async {
+    try {
+      await _supabaseClient.auth.signOut();
+      return right(unit);
+    } on AuthException catch (e) {
+      return left(AuthFailure(message: e.message));
+    } catch (e) {
+      return left(ServerFailure(message: 'Failed to sign out: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> resetPassword({required String email}) async {
+    try {
+      await _supabaseClient.auth.resetPasswordForEmail(email);
+      return right(unit);
+    } on AuthException catch (e) {
+      return left(AuthFailure(message: e.message));
+    } catch (e) {
+      return left(ServerFailure(message: 'Failed to send reset email: $e'));
+    }
   }
 }
