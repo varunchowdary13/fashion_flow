@@ -28,9 +28,12 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.29.2"
+          flutter-version: "3.35.6"
           channel: "stable"
           cache: true
+
+      - name: Flutter doctor
+        run: flutter doctor -v
 
       - name: Install dependencies
         run: flutter pub get
@@ -39,7 +42,7 @@ jobs:
         run: flutter analyze --no-fatal-infos
 
       - name: Run tests
-        run: flutter test
+        run: flutter test --reporter expanded
 
       - name: Build web
         run: flutter build web --release --base-href "/fashion_flow/"

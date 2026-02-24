@@ -2,7 +2,7 @@
 
 [![CI/CD](https://github.com/varunchowdary13/fashion_flow/actions/workflows/ci.yml/badge.svg)](https://github.com/varunchowdary13/fashion_flow/actions/workflows/ci.yml)
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://varunchowdary13.github.io/fashion_flow/)
-[![Flutter](https://img.shields.io/badge/Flutter-3.29-blue?logo=flutter)](https://flutter.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.35-blue?logo=flutter)](https://flutter.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A modern, cross-platform fashion e-commerce app built with Flutter, featuring clean architecture, dark mode support, and seamless Supabase integration.
