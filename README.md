@@ -1,6 +1,13 @@
 # Fashion Flow 🛍️
 
+[![CI/CD](https://github.com/varunchowdary13/fashion_flow/actions/workflows/ci.yml/badge.svg)](https://github.com/varunchowdary13/fashion_flow/actions/workflows/ci.yml)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://varunchowdary13.github.io/fashion_flow/)
+[![Flutter](https://img.shields.io/badge/Flutter-3.29-blue?logo=flutter)](https://flutter.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A modern, cross-platform fashion e-commerce app built with Flutter, featuring clean architecture, dark mode support, and seamless Supabase integration.
+
+**🔗 [Live Demo](https://varunchowdary13.github.io/fashion_flow/)**
 
 ## ✨ Features
 
@@ -38,7 +45,9 @@ lib/
 └── features/
     ├── auth/                 # Login, Signup, AuthRepository
     ├── cart/                 # Cart screen & controller
-    └── products/             # Home, ProductCard, Repository
+    ├── orders/               # Order history & details
+    ├── products/             # Home, ProductCard, Repository
+    └── profile/              # User profile screen
 ```
 
 ## 🚀 Getting Started
@@ -54,7 +63,7 @@ lib/
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/fashion_flow.git
+   git clone https://github.com/varunchowdary13/fashion_flow.git
    cd fashion_flow
    ```
 
@@ -96,11 +105,11 @@ _Coming soon_
 ## 🗺️ Roadmap
 
 - [x] Setup & Theming (Stage 1)
-- [ ] Authentication (Stage 2)
-- [ ] Products Catalog (Stage 3)
-- [ ] Cart & Checkout (Stage 4)
-- [ ] Profile & Orders (Stage 5)
-- [ ] Polish & Deploy (Stage 6)
+- [x] Authentication (Stage 2)
+- [x] Products Catalog (Stage 3)
+- [x] Cart & Checkout (Stage 4)
+- [x] Profile & Orders (Stage 5)
+- [x] Polish & Deploy (Stage 6)
 
 ## 📄 License
 

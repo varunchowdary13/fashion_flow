@@ -97,7 +97,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final filteredProducts = ref.watch(filteredProductsProvider);
-    final authRepo = ref.watch(authRepositoryProvider);
     final cartItems = ref.watch(cartProvider);
     final cartCount = cartItems.fold(0, (sum, item) => sum + item.quantity);
     final themeMode = ref.watch(themeModeProvider);
@@ -151,14 +150,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ],
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Sign out',
-            onPressed: () async {
-              await authRepo.signOut();
-              if (context.mounted) {
-                context.go(AppRoutes.login);
-              }
-            },
+            icon: const Icon(Icons.person_outline),
+            tooltip: 'Profile',
+            onPressed: () => context.push(AppRoutes.profile),
           ),
         ],
       ),
